@@ -8,7 +8,7 @@ void testApp::setup(){
     sobelShader.load("base.vert", "sobel.frag");
     energyShader.load("base.vert", "energy.frag");
     
-    img.loadImage("female4.png");
+    img.loadImage("male.jpg");
     
     w = img.width;
     h = img.height;
@@ -72,6 +72,14 @@ void testApp::draw(){
         
         ofColor c = ofColor(255,0,0);
         ofSetColor(c);
+        unsigned char *newPix = img.getPixels();
+        vector<unsigned char> newPixVec;
+        
+        for(int i =0; i< w*h; i++){
+            newPixVec.push_back(newPix[i]);
+        }
+        
+        newPixVec.erase(newPixVec.begin() + (10));
         
         for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
             vector<int> curSeam = totalSeams[numSeams];
@@ -82,7 +90,8 @@ void testApp::draw(){
                 
                 for(int col = 0; col < img.width; col++){
                     if(col  == colToRemove){
-                        ofRect(col, row, 1, 1);
+                        //ofRect(col, row, 1, 1);
+                       
                     }
                 }
             }
