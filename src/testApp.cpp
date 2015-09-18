@@ -8,16 +8,20 @@ void testApp::setup(){
     sobelShader.load("base.vert", "sobel.frag");
     energyShader.load("base.vert", "energy.frag");
     
-    img.loadImage("male.jpg");
+    img.loadImage("horse.png");
     
     w = img.width;
     h = img.height;
     
     fbo.allocate(img.width, img.height, GL_RGBA);
     pixels.allocate(img.width, img.height, OF_PIXELS_RGBA);
+    origPix.allocate(img.width, img.height, OF_PIXELS_RGBA);
     greyPix.allocate(img.width, img.height, OF_PIXELS_RGBA);
     
+    
     pixels = img.getPixelsRef();
+    origPix = pixels;
+    
     if(img.bAllocated()){
      //   convertGrayscale(pixels);
     }
@@ -52,59 +56,36 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    
+    int count = 0;
     if(ofGetFrameNum() == 0){
-    fbo.begin();
-        sobelShader.begin();
-            sobelShader.setUniformTexture("srcTex", img.getTextureReference(), 0);
-            sobelShader.setUniform2f("step", 1.0, 1.0);
-            sobelShader.setUniform1f("time", ofGetFrameNum());
-            img.draw(0, 0);
-        sobelShader.end();
-    fbo.end();
-    
-        fbo.readToPixels(pixels);
-        
+
+        calcGradient(img.getTextureReference());
         findSeam();
+        removeSeam();
         
-    fbo.begin();
-        img.draw(0,0);
-        
-        ofColor c = ofColor(255,0,0);
-        ofSetColor(c);
-        unsigned char *newPix = img.getPixels();
-        vector<unsigned char> newPixVec;
-        
-        for(int i =0; i< w*h; i++){
-            newPixVec.push_back(newPix[i]);
+        for(int i = 0; i<50; i++){
+            img.setFromPixels(origPix);
+            img.update();
+            calcGradient(img.getTextureReference());
+            findSeam();
+            removeSeam();
+
         }
         
-        newPixVec.erase(newPixVec.begin() + (10));
-        
-        for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
-            vector<int> curSeam = totalSeams[numSeams];
-            
-            for(int row = 0; row < img.height; row++){
-                
-                int colToRemove = curSeam[row];
-                
-                for(int col = 0; col < img.width; col++){
-                    if(col  == colToRemove){
-                        //ofRect(col, row, 1, 1);
-                       
-                    }
-                }
-            }
-        }
-        
-        ofSetColor(255);
-        
-        fbo.readToPixels(pixels);
         ofSaveImage(pixels, ofGetTimestampString()+".png");
-    fbo.end();
     }
     
-    fbo.draw(0,0);
+    //ni.setFromPixels(np);
+    //ni.update();
+    //ni.draw(0,0);
+    
+    
+    
+    img.setFromPixels(origPix);
+    img.update();
+    img.draw(0,0);
+    
+    //fbo.draw(0,0);
 }
 //--------------------------------------------------------------
 void testApp::convertGrayscale(ofPixels ppixels){
@@ -122,6 +103,73 @@ void testApp::convertGrayscale(ofPixels ppixels){
 int testApp::fastMin(int x, int y){
     return  y + ((x - y) & ((x - y) >>
                             (sizeof(int) * CHAR_BIT - 1)));
+}
+//--------------------------------------------------------------
+void testApp::calcGradient(ofTexture texture){
+    fbo.begin();
+        sobelShader.begin();
+        sobelShader.setUniformTexture("srcTex", texture, 0);
+        sobelShader.setUniform2f("step", 1.0, 1.0);
+        sobelShader.setUniform1f("time", ofGetFrameNum());
+            texture.draw(0, 0);
+        sobelShader.end();
+    fbo.end();
+    
+    fbo.readToPixels(pixels);
+}
+//--------------------------------------------------------------
+void testApp::removeSeam(){
+    fbo.begin();
+    img.draw(0,0);
+    
+    ofColor c = ofColor(255,0,0);
+    ofSetColor(c);
+    
+    unsigned char *newPix = img.getPixels();
+    
+    int numPixToRemove = totalSeams.size() * h;
+    int leftOvers [numPixToRemove*4];
+    
+    for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
+        vector<int> curSeam = totalSeams[numSeams];
+        
+        for(int row = 0; row < img.height; row++){
+            
+            int colToRemove = curSeam[row];
+            
+            for(int col = 0; col < img.width; col++){
+                int loc = (row * w + col)*4;
+                
+                if(col  == colToRemove){
+                    //ofRect(col, row, 1, 1);
+                    origPix[loc] = origPix[loc+4];
+                    origPix[loc+1] = origPix[loc+5];
+                    origPix[loc+2] = origPix[loc+6];
+                }
+                /*
+                 else{
+                 leftOvers[loc] = origPix[loc];
+                 leftOvers[loc+1] = origPix[loc+1];
+                 leftOvers[loc+2] = origPix[loc+2];
+                 }
+                 */
+            }
+        }
+    }
+    
+    /*
+     np.allocate(w, h, 4);
+     
+     for(int i = 0; i<w*h*4; i++){
+     np[i] = leftOvers[i];
+     }
+     */
+    
+    ofSetColor(255);
+    
+    //fbo.readToPixels(pixels);
+    
+    fbo.end();
 }
 //--------------------------------------------------------------
 
