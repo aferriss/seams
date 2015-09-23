@@ -18,12 +18,13 @@ class testApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-    
+        void removeSeam(ofTexture srcTex);
         void convertGrayscale(ofPixels pixels);
         int getPixelLoc(ofPixels ppixels, int row, int col, int width);
         void findSeam();
         vector<int> findMinSeam(vector<int> SeamTable, int minCol, int width, int height);
         int getNextMinCol(vector<int> rowArray, int col);
+        void getEnergyMap(ofTexture tex);
         int fastMin(int x, int y);
     
     int w, h;
@@ -34,12 +35,14 @@ class testApp : public ofBaseApp{
     vector<vector<int> > totalSeams;
     
     
-    ofImage img, greyImg;
+    ofImage img, greyImg, newImg;
     ofTexture tex;
     ofPixels pixels, greyPix;
     
     ofFbo fbo, energyFbo, rowFbo;
     ofShader baseShader, sobelShader, energyShader;
     ofVideoGrabber cam;
-		
+    bool findAll, drawSeam;
+    
+    int numSeamsRemoved;
 };
