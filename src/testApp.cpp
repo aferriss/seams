@@ -8,16 +8,22 @@ void testApp::setup(){
     sobelShader.load("base.vert", "sobel.frag");
     energyShader.load("base.vert", "energy.frag");
     
+
     img.loadImage("man2.png");
+
     
     w = img.width;
     h = img.height;
     
     fbo.allocate(img.width, img.height, GL_RGBA);
     pixels.allocate(img.width, img.height, OF_PIXELS_RGBA);
+    origPix.allocate(img.width, img.height, OF_PIXELS_RGBA);
     greyPix.allocate(img.width, img.height, OF_PIXELS_RGBA);
     
+    
     pixels = img.getPixelsRef();
+    origPix = pixels;
+    
     if(img.bAllocated()){
      //   convertGrayscale(pixels);
     }
@@ -55,12 +61,14 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    
+    int count = 0;
     if(ofGetFrameNum() == 0){
 
         getEnergyMap(img.getTextureReference());
         fbo.readToPixels(pixels);
+
         findSeam();
+        removeSeam();
         
         fbo.begin();
             ofClear(0);
@@ -151,7 +159,7 @@ void testApp::removeSeam(ofTexture srcTex){
     newImg.allocate(newWidth, h, OF_IMAGE_COLOR_ALPHA);
     newImg.setFromPixels(newPixels);
     numSeamsRemoved ++;
-    
+
 }
 //--------------------------------------------------------------
 void testApp::convertGrayscale(ofPixels ppixels){
@@ -180,6 +188,7 @@ void testApp::getEnergyMap(ofTexture etex){
             etex.draw(0, 0);
         sobelShader.end();
     fbo.end();
+
 }
 //--------------------------------------------------------------
 

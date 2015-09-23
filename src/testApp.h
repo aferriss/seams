@@ -22,6 +22,9 @@ class testApp : public ofBaseApp{
         void convertGrayscale(ofPixels pixels);
         int getPixelLoc(ofPixels ppixels, int row, int col, int width);
         void findSeam();
+        void removeSeam();
+        void calcGradient(ofTexture texture);
+    
         vector<int> findMinSeam(vector<int> SeamTable, int minCol, int width, int height);
         int getNextMinCol(vector<int> rowArray, int col);
         void getEnergyMap(ofTexture tex);
@@ -37,7 +40,10 @@ class testApp : public ofBaseApp{
     
     ofImage img, greyImg, newImg;
     ofTexture tex;
-    ofPixels pixels, greyPix;
+    ofPixels pixels, greyPix, origPix;
+    
+    ofPixels np;
+    ofImage ni;
     
     ofFbo fbo, energyFbo, rowFbo;
     ofShader baseShader, sobelShader, energyShader;
