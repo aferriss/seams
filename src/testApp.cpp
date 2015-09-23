@@ -68,7 +68,6 @@ void testApp::draw(){
         fbo.readToPixels(pixels);
 
         findSeam();
-        removeSeam();
         
         fbo.begin();
             ofClear(0);
@@ -146,7 +145,7 @@ void testApp::removeSeam(ofTexture srcTex){
                     
                     
                 } else if (col > colToRemove){
-                    newPixelIndex -= 80;
+                    newPixelIndex -= 32;
                     newPixels[newPixelIndex] = pixelsToRemove[oldPixelIndex];
                     newPixels[newPixelIndex+1] = pixelsToRemove[oldPixelIndex+1];
                     newPixels[newPixelIndex+2] = pixelsToRemove[oldPixelIndex+2];
@@ -256,6 +255,7 @@ void testApp::findSeam(){
             totalSeams.push_back(foundSeam);
         }
     } else{
+        cout<<"Min seam = "+ofToString(minCol)<<endl;
         foundSeam = findMinSeam(seamTable, minCol, img.width, img.height);
         totalSeams.push_back(foundSeam);
     }
