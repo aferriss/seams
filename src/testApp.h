@@ -19,7 +19,7 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void removeSeam(ofTexture srcTex);
-        void convertGrayscale(ofPixels pixels);
+        //void convertGrayscale(ofPixels pixels);
         int getPixelLoc(ofPixels ppixels, int row, int col, int width);
         void findSeam();
         
@@ -41,12 +41,14 @@ class testApp : public ofBaseApp{
     ofImage img, greyImg, newImg;
     ofTexture tex;
     ofPixels pixels, greyPix, origPix;
-    
+    ofPixels newPixels;
     ofPixels np;
     ofImage ni;
     
     ofFbo fbo, energyFbo, rowFbo;
     ofShader baseShader, sobelShader, energyShader;
+    int newWidth;
+    
     ofVideoGrabber cam;
     bool findAll, drawSeam;
     
