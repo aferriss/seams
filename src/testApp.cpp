@@ -9,9 +9,9 @@ void testApp::setup(){
     energyShader.load("base.vert", "energy.frag");
     
 
-    img.loadImage("map.png");
+    img.loadImage("ss6.png");
 
-    
+    cout<<ofToString(img.getPixelsRef().getNumChannels())<<endl;
     w = img.width;
     h = img.height;
     
@@ -24,9 +24,6 @@ void testApp::setup(){
     pixels = img.getPixelsRef();
     origPix = pixels;
     
-    if(img.bAllocated()){
-     //   convertGrayscale(pixels);
-    }
     
     newImg.setUseTexture(true);
     
@@ -67,19 +64,22 @@ void testApp::draw(){
     int count = 0;
     if(ofGetFrameNum() <= img.width - 50 && img.isAllocated()){
         fbo.allocate(newImg.width, newImg.height, GL_RGBA);
-        //newImg.allocate(newImg.width, newImg.height, OF_IMAGE_COLOR);
-        //pixels.allocate(newImg.width, img.height, OF_PIXELS_RGBA);
-        //seamTable.resize(newImg.width * img.height);
+
         fbo.begin();
             ofClear(0);
         fbo.end();
         
         if(ofGetFrameNum() == 0){
-        getEnergyMap(img.getTextureReference());
+            getEnergyMap(img.getTextureReference());
         } else {
             getEnergyMap(newImg.getTextureReference());
         }
+        
+        ////////////sloooow
         fbo.readToPixels(pixels);
+        ////////////
+        
+        
         findSeam();
         
         
@@ -90,6 +90,8 @@ void testApp::draw(){
         }
         
         newImg.draw(0,0);
+        
+        
         pixels = newImg.getPixelsRef();
         //ofSaveImage(pixels, ofGetTimestampString()+".png");
         
@@ -102,7 +104,7 @@ void testApp::draw(){
     
 }
 //--------------------------------------------------------------
-void testApp::removeSeam(ofTexture srcTex){
+void testApp::removeSeam(ofTexture &srcTex){
     
     fbo.begin();
         srcTex.draw(0, 0);
@@ -119,10 +121,13 @@ void testApp::removeSeam(ofTexture srcTex){
     
     //ofPixels newPixels;
     newPixels.allocate(newWidth, h, 4);
+    
+    auto pixelsToRemovePtr = pixelsToRemove.getPixels();
+    auto newPixelsPtr = newPixels.getPixels();
    
     
     //for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
-        vector<int> curSeam = totalSeams[totalSeams.size()-1];
+        vector<int> &curSeam = totalSeams[totalSeams.size()-1];
         
         for(int row = 0; row < img.height; row++){
             
@@ -144,18 +149,18 @@ void testApp::removeSeam(ofTexture srcTex){
                 
                 
                 if(col < colToRemove){
-                    newPixels[newPixelIndex] = pixelsToRemove[oldPixelIndex];
-                    newPixels[newPixelIndex+1] = pixelsToRemove[oldPixelIndex+1];
-                    newPixels[newPixelIndex+2] = pixelsToRemove[oldPixelIndex+2];
-                    newPixels[newPixelIndex+3] = pixelsToRemove[oldPixelIndex+3];
+                    newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
+                    newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
+                    newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
+                    newPixelsPtr[newPixelIndex+3] = pixelsToRemovePtr[oldPixelIndex+3];
                     
                     
                 } else if (col > colToRemove){
                     newPixelIndex -= 4;
-                    newPixels[newPixelIndex] = pixelsToRemove[oldPixelIndex];
-                    newPixels[newPixelIndex+1] = pixelsToRemove[oldPixelIndex+1];
-                    newPixels[newPixelIndex+2] = pixelsToRemove[oldPixelIndex+2];
-                    newPixels[newPixelIndex+3] = pixelsToRemove[oldPixelIndex+3];
+                    newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
+                    newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
+                    newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
+                    newPixelsPtr[newPixelIndex+3] = pixelsToRemovePtr[oldPixelIndex+3];
                 }
             }
         }
@@ -172,7 +177,7 @@ int testApp::fastMin(int x, int y){
                             (sizeof(int) * CHAR_BIT - 1)));
 }
 //--------------------------------------------------------------
-void testApp::getEnergyMap(ofTexture etex){
+void testApp::getEnergyMap(ofTexture &etex){
     fbo.begin();
         sobelShader.begin();
         sobelShader.setUniformTexture("srcTex", etex, 0);
@@ -189,6 +194,7 @@ void testApp::findSeam(){
     
     unsigned char *fboPix = pixels.getPixels();
     
+    //fill the last row
     for(int y = 0; y < newWidth; y++){
         seamTable[y] = fboPix[y*4];//getPixelLoc(pixels, 0, y, img.width);
     }
@@ -200,13 +206,14 @@ void testApp::findSeam(){
             int t = seamTable[rowOffset + j];
             //int tr = seamTable[rowOffset + j + 1];
             
-            int loc = (i * newWidth+j)*4;
-            int seamLoc = (i*newWidth+j);
+            int loc = (i * newWidth + j )*4;
+            int seamLoc = ( i * newWidth + j );
             
             if(j == 0){ //if left edge
                 seamTable[seamLoc] = fboPix[loc] + fastMin(t, seamTable[rowOffset + j + 1]);
             } else if( j == (newWidth -1)){ //or right edge
-                seamTable[seamLoc] = fboPix[loc] + fastMin(seamTable[rowOffset + j -1], t);
+                seamTable[seamLoc] = fboPix[loc] ;//
+                seamTable[seamLoc] += fastMin(seamTable[rowOffset + j -1], t);
             } else{ //not on the edges
                 /*
                 //if everything the same choose random
@@ -222,7 +229,8 @@ void testApp::findSeam(){
                     
                 } else{
                  */
-                    seamTable[seamLoc] = fboPix[loc] + fastMin(fastMin(seamTable[rowOffset + j -1], t), seamTable[rowOffset + j + 1]);
+                seamTable[seamLoc] = fboPix[loc];
+                seamTable[seamLoc] += fastMin(fastMin(seamTable[rowOffset + j -1], t), seamTable[rowOffset + j + 1]);
                 //}
             }
         }
@@ -255,7 +263,7 @@ void testApp::findSeam(){
     }
 }
 //--------------------------------------------------------------
-vector<int> testApp::findMinSeam(vector<int> SeamTable, int minCol, int width, int height){
+vector<int> testApp::findMinSeam(vector<int> const &SeamTable, int minCol, int width, int height){
     //seam.clear();
     
     for(int i = img.height -1; i> 0; i--){
@@ -271,7 +279,7 @@ vector<int> testApp::findMinSeam(vector<int> SeamTable, int minCol, int width, i
     return seam;
 }
 //--------------------------------------------------------------
-int testApp::getNextMinCol(vector<int> rowArray, int col){
+int testApp::getNextMinCol(vector<int> const &rowArray, int col){
     if(col == 0){
         if(rowArray[col] < rowArray[col + 1]){
             return col;
@@ -285,7 +293,7 @@ int testApp::getNextMinCol(vector<int> rowArray, int col){
             return col;
         }
     } else{
-        
+        /*
         if(rowArray[col-1] == rowArray[col] && rowArray[col] == rowArray[col+1] ){
             //if everything is the same choose randomly
             vector<int> choices;
@@ -295,7 +303,8 @@ int testApp::getNextMinCol(vector<int> rowArray, int col){
             int randChoice = floor(ofRandom(3));
             return choices[randChoice];
         }
-        else if((rowArray[col -1] < rowArray[col]) && (rowArray[col -1] < rowArray[col + 1])){
+        else */
+        if((rowArray[col -1] < rowArray[col]) && (rowArray[col -1] < rowArray[col + 1])){
             return col -1;
         } else if((rowArray[col] < rowArray[col - 1]) && (rowArray[col] < rowArray[col+1])){
             return col;
@@ -306,7 +315,7 @@ int testApp::getNextMinCol(vector<int> rowArray, int col){
 }
 
 //--------------------------------------------------------------
-int testApp::getPixelLoc(ofPixels ppixels, int row, int col, int srcWidth){
+int testApp::getPixelLoc(ofPixels const &ppixels, int row, int col, int srcWidth){
     return ppixels[(row*srcWidth+col) * 4];
 }
 
