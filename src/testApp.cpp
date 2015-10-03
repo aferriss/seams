@@ -9,7 +9,7 @@ void testApp::setup(){
     energyShader.load("base.vert", "energy.frag");
     
 
-    img.loadImage("ss6.png");
+    img.loadImage("beach.png");
 
     cout<<ofToString(img.getPixelsRef().getNumChannels())<<endl;
     w = img.width;
@@ -257,7 +257,7 @@ void testApp::findSeam(){
             totalSeams.push_back(foundSeam);
         }
     } else{
-        cout<<"Min seam = "+ofToString(minCol)<<endl;
+        //cout<<"Min seam = "+ofToString(minCol)<<endl;
         foundSeam = findMinSeam(seamTable, minCol, newWidth, img.height);
         totalSeams.push_back(foundSeam);
     }
