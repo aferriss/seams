@@ -9,9 +9,11 @@ void testApp::setup(){
     energyShader.load("base.vert", "energy.frag");
     
 
-    img.loadImage("forest2.png");
+
+    img.loadImage("pepe.png");
     //img.rotate90(1);
     
+
     cout<<ofToString(img.getPixelsRef().getNumChannels())<<endl;
     w = img.width;
     h = img.height;
@@ -36,6 +38,7 @@ void testApp::setup(){
     
     seam.resize(img.height);
     hSeam.resize(img.width);
+
     
     
     //cout<<ofToString(seamTable.size())<<endl;
@@ -97,11 +100,48 @@ void testApp::draw(){
         //fbo.readToPixels(pixels);
         //newImg.allocate(img.width, img.height, OF_IMAGE_COLOR_ALPHA);
 
+
         //newImg.setFromPixels(pixels);
         //numSeamsRemoved = 1;
          
     }
      */
+    
+    if(ofGetFrameNum() % 2 == 0 && ofGetFrameNum() >= 4){
+        //newImg.rotate90(1);
+        //img.rotate90(1);
+        /*
+        cout<<ofToString(newImg.width)<<endl;
+        newHeight = newImg.height;
+        newWidth  = newImg.width;
+        pixels.allocate(newImg.width, newImg.height, OF_PIXELS_RGBA);
+        int temp = startingWidth;
+        startingWidth = startingHeight;
+        startingHeight = temp;
+        */
+    } else{
+        
+        //newImg.rotate90(-1);
+        //img.rotate90(-1);
+        /*
+        newHeight = newImg.height;
+        newWidth  = newImg.width;
+        pixels.allocate(newImg.width, newImg.height, OF_PIXELS_RGBA);
+        
+        startingHeight = img.width;
+        startingWidth = img.height;
+         */
+    }
+    
+    
+    if(ofGetFrameNum() <=200 && numSeamsRemoved < img.width-1){
+        fbo.allocate(newImg.width, newImg.height, GL_RGBA);
+
+        //newImg.setFromPixels(pixels);
+        //numSeamsRemoved = 1;
+         
+    }
+    
     /*
     if(ofGetFrameNum() % 2 == 0 && ofGetFrameNum() >= 4){
         newImg.rotate90(1);
@@ -142,8 +182,19 @@ void testApp::draw(){
         fbo.readToPixels(pixels);
         ////////////
         
+            //findSeam();
+            findHorSeam();
+        if(ofGetFrameNum() == 0){
+            //removeSeam(img.getTextureReference());
+            removeHSeam(img.getTextureReference());
+        } else{
+            //removeSeam(newImg.getTextureReference());
+            removeHSeam(newImg.getTextureReference());
+        }
+
         
-        
+
+        /*
         if(ofGetFrameNum() % 2 == 0){
             findSeam();
             //findHorSeam();
@@ -169,45 +220,51 @@ void testApp::draw(){
                 removeSeam(newImg.getTextureReference());
             }
         }
+         */
         
         
      
         
         
         
+
         pixels = newImg.getPixelsRef();
     }
      
     ofClear(0);
 
+/*
     fbo.begin();
     ofClear(0);
     if(ofGetFrameNum()%1 == 0){
-        ofPushMatrix();
-            ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-            ofRotate(-90, 0, 0, 1);
-            newImg.draw(-ofGetWidth()/2,-ofGetHeight()/2);
-        ofPopMatrix();
-        
+        //ofPushMatrix();
+            //ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
+            //ofRotate(-90, 0, 0, 1);
+            //newImg.draw(-ofGetWidth()/2,-ofGetHeight()/2);
+        //ofPopMatrix();
+        newImg.draw(0,0);
+ 
     } else{
 
         newImg.draw(0,0);
         
     }
     fbo.end();
-    
+
+    */
+    /*
         ofPushMatrix();
             ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
             ofRotate(-90, 0, 0, 1);
             newImg.draw(-ofGetWidth()/2,-ofGetHeight()/2);
         ofPopMatrix();
-    
+    */
         //ofSaveImage(pixels, ofGetTimestampString()+".png");
         
     //}
     
     
-    
+    newImg.draw(0,0);
     //newImg.draw(floor((numSeamsRemoved-1)*0.5), floor((numRowsRemoved -1)*0.5));
     //newImg.draw(0,floor((numRowsRemoved -1)*0.5));
     
@@ -218,10 +275,10 @@ void testApp::removeHSeam(ofTexture &srcTex){
     newHeight = startingWidth - numRowsRemoved;
     
     ofPixels pixelsToRemove;
-    pixelsToRemove.allocate(newImg.width, newImg.height, 4);
+    pixelsToRemove.allocate(newImg.width, newImg.height, OF_PIXELS_RGBA);
     srcTex.readToPixels(pixelsToRemove);
     
-    newPixels.allocate(newImg.width, newImg.height, 4);
+    newPixels.allocate(newImg.width, newImg.height, OF_PIXELS_RGBA);
     
     auto pixelsToRemovePtr = pixelsToRemove.getPixels();
     auto newPixelsPtr = newPixels.getPixels();
@@ -229,24 +286,23 @@ void testApp::removeHSeam(ofTexture &srcTex){
     vector<int> &curSeam = totalSeams[totalSeams.size() -1];
     
     
-    for(int col = 0; col < newImg.height; col++){
-        
-        
-        
-        for(int row = 0; row < newImg.width; row++){
-            int rowToRemove = curSeam[row];
+    
+    for(int row = 0; row < newImg.width; row++){
+        int rowToRemove = curSeam[row];
+        for(int col = 0; col < newImg.height; col++){
+            
             
             int newPixelIndex = (col * newImg.width + row)*4;
             int oldPixelIndex = (col * newImg.width + row)*4;
             
-            /*
-            if(row  < rowToRemove){
+            
+            if(col  > rowToRemove){
                 newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
                 newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
                 newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
                 newPixelsPtr[newPixelIndex+3] = pixelsToRemovePtr[oldPixelIndex+3];
                 
-            } else if(row > rowToRemove){
+            } /*else if(col > rowToRemove){
                 newPixelIndex -= 4*newImg.width;
                 newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
                 newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
@@ -255,31 +311,43 @@ void testApp::removeHSeam(ofTexture &srcTex){
             }
             */
             
+            /*
             if(col == rowToRemove){
                 newPixelsPtr[newPixelIndex] = 255;//pixelsToRemovePtr[oldPixelIndex];
-                newPixelsPtr[newPixelIndex+1] = 0;//pixelsToRemovePtr[oldPixelIndex+1];
-                newPixelsPtr[newPixelIndex+2] = 0;//pixelsToRemovePtr[oldPixelIndex+2];
+                newPixelsPtr[newPixelIndex+1] = 255;//pixelsToRemovePtr[oldPixelIndex+1];
+                newPixelsPtr[newPixelIndex+2] = 255;//pixelsToRemovePtr[oldPixelIndex+2];
                 newPixelsPtr[newPixelIndex+3] = 255;//pixelsToRemovePtr[oldPixelIndex+3];
+            } else if(col != rowToRemove){
+                newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
+                newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
+                newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
+                newPixelsPtr[newPixelIndex+3] = pixelsToRemovePtr[oldPixelIndex+3];
             }
-            
+            */
         }
     }
     
-    newImg.allocate(newHeight, newImg.width, OF_IMAGE_COLOR_ALPHA);
+    newImg.allocate(newImg.width, newImg.height, OF_IMAGE_COLOR_ALPHA);
     newImg.setFromPixels(newPixels);
     numRowsRemoved++;
     
+    
+    //newImg.draw(floor((numSeamsRemoved-1)*0.5), floor((numRowsRemoved -1)*0.5));
+    //newImg.draw(0,floor((numRowsRemoved -1)*0.5));
+    
 }
+
 //--------------------------------------------------------------
 void testApp::removeSeam(ofTexture &srcTex){
     
     newWidth = startingWidth - numSeamsRemoved ;
     
     ofPixels pixelsToRemove;
-    pixelsToRemove.allocate(newImg.width, newImg.height, 4);
+
+    pixelsToRemove.allocate(newImg.width, img.height, OF_PIXELS_RGBA);
     srcTex.readToPixels(pixelsToRemove);
     
-    newPixels.allocate(newWidth, newImg.height, 4);
+    newPixels.allocate(newWidth, img.height, OF_PIXELS_RGBA);
     
     auto pixelsToRemovePtr = pixelsToRemove.getPixels();
     auto newPixelsPtr = newPixels.getPixels();
@@ -288,14 +356,16 @@ void testApp::removeSeam(ofTexture &srcTex){
     //for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
         vector<int> &curSeam = totalSeams[totalSeams.size()-1];
         
-        for(int row = 0; row < newImg.height; row++){
+
+        for(int row = 0; row < img.height; row++){
             
             int colToRemove = curSeam[row];
             
             for(int col = 0; col < newImg.width; col++){
                 
-                int newPixelIndex = (row* newWidth + col)*4;
-                int oldPixelIndex = (row* newImg.width + col)*4;
+
+                int newPixelIndex = (row * newWidth + col)*4;
+                int oldPixelIndex = (row * newImg.width + col)*4;
                 
                 /*
                 if(col  == colToRemove && drawSeam){
@@ -314,18 +384,22 @@ void testApp::removeSeam(ofTexture &srcTex){
                     newPixelsPtr[newPixelIndex+3] = pixelsToRemovePtr[oldPixelIndex+3];
                     
                     
-                } else if (col > colToRemove){
+                }/* else if (col > colToRemove){
                     newPixelIndex -= 4;
                     newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
                     newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
                     newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
                     newPixelsPtr[newPixelIndex+3] = pixelsToRemovePtr[oldPixelIndex+3];
                 }
+
+                  */
             }
         }
     //}
     
-    newImg.allocate(newWidth, newImg.height, OF_IMAGE_COLOR_ALPHA);
+
+    newImg.allocate(newWidth, img.height, OF_IMAGE_COLOR_ALPHA);
+    //newImg.allocate(img.width, img.height, OF_IMAGE_COLOR_ALPHA);
     newImg.setFromPixels(newPixels);
     numSeamsRemoved ++;
 
@@ -333,6 +407,8 @@ void testApp::removeSeam(ofTexture &srcTex){
 //--------------------------------------------------------------
 void testApp::addSeam(ofTexture &srcTex){
     
+
+
     
     fbo.begin();
         srcTex.draw(0, 0);
@@ -348,15 +424,19 @@ void testApp::addSeam(ofTexture &srcTex){
     
     
     //ofPixels newPixels;
-    newPixels.allocate(newWidth, h, 4);
+    newPixels.allocate(newWidth, h, OF_PIXELS_RGBA);
+
     
     auto pixelsToRemovePtr = pixelsToRemove.getPixels();
     auto newPixelsPtr = newPixels.getPixels();
    
     
     //for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
+
+
         vector<int> &curSeam = totalSeams[totalSeams.size() - 1];
         cout<<ofToString(totalSeams.size())<<endl;
+
         for(int row = 0; row < img.height; row++){
             
             int colToRemove = curSeam[row];
@@ -385,6 +465,7 @@ void testApp::addSeam(ofTexture &srcTex){
                     
                 } else if (col > colToRemove){
                     newPixelIndex += 4;
+
                     newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
                     newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
                     newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
@@ -464,36 +545,37 @@ void testApp::findHorSeam(){
         hSeamTable[x] = fboPix[x*newImg.width*4];
     }
     
-    /*
+
+    
     for(int y = 0; y<newImg.height; y++){
         for(int x = 1; x< newImg.width; x++){
-            int colOffset = (x - 1) * newImg.height;
             
-            int r = hSeamTable[colOffset + 1];
+            //int r = hSeamTable[colOffset + 1];
             
-            int loc = ( y * newImg.height + x)*4;
-            int seamLoc = (y * newImg.height + x);
+            int loc = ( y * newImg.width + x)*4;
+            int seamLoc = (y * newImg.width + x);
+            int colOffset = seamLoc -1;
+            
             
             if(y == 0){
-                hSeamTable[seamLoc] = fboPix[loc] + fastMin(hSeamTable[seamLoc - 1], hSeamTable[seamLoc + newImg.width -1]);
+                hSeamTable[seamLoc] = fboPix[loc] + fastMin(hSeamTable[colOffset], hSeamTable[colOffset + newImg.width]);
             } else if(y == (newImg.height -1)){
                 hSeamTable[seamLoc] = fboPix[loc];
-                hSeamTable[seamLoc] += fastMin(hSeamTable[seamLoc - newImg.width -1], hSeamTable[seamLoc -1]);
+                hSeamTable[seamLoc] += fastMin(hSeamTable[colOffset - newImg.width], hSeamTable[colOffset]);
             } else{
                 hSeamTable[seamLoc] = fboPix[loc];
-                hSeamTable[seamLoc] += fastMin(fastMin(hSeamTable[seamLoc + newImg.width - 1], hSeamTable[seamLoc -1]), hSeamTable[seamLoc + newImg.width + 1]);
+                hSeamTable[seamLoc] += fastMin(fastMin(hSeamTable[colOffset -newImg.width], hSeamTable[colOffset]), hSeamTable[colOffset + newImg.width]);
             }
         }
     }
-    */
+    
 
     
     int minRow = 0;
-    vector<int> zeros;
+    //vector<int> zeros;
     
     for(int x = 0; x< newImg.height; x++){
-        zeros.push_back(x);
-        
+        //zeros.push_back(x);
         if(getPixelLoc(pixels, x, newImg.width -1, newImg.width) < getPixelLoc(pixels, minRow, newImg.width-1, newImg.width) ){
             minRow = x;
         }
@@ -512,13 +594,16 @@ void testApp::findSeam(){
     unsigned char *fboPix = pixels.getPixels();
     
     //cout<<ofToString(pixels.getNumChannels())<<endl;
+
+
     //fill the last row
     for(int y = 0; y < newWidth; y++){
         seamTable[y] = fboPix[y*4];//getPixelLoc(pixels, 0, y, img.width);
     }
     
     
-    for(int i = 1; i< newImg.height; i++){
+
+    for(int i = 1; i< img.height; i++){
         for(int j = 0; j< newWidth; j++){
             int rowOffset = (i - 1) * newWidth;
             //int tl = seamTable[rowOffset + j -1];
@@ -548,7 +633,8 @@ void testApp::findSeam(){
                     
                 } else{
                  */
-                
+            
+
                 seamTable[seamLoc] = fboPix[loc];
                 seamTable[seamLoc] += fastMin(fastMin(seamTable[rowOffset + j -1], t), seamTable[rowOffset + j + 1]);
                 //}
@@ -579,12 +665,32 @@ void testApp::findSeam(){
     } else{
         //cout<<"Min seam = "+ofToString(minCol)<<endl;
         foundSeam = findMinSeam(seamTable, minCol, newWidth, newImg.height);
+
+
         totalSeams.push_back(foundSeam);
     }
 
 }
 //--------------------------------------------------------------
 vector<int> testApp::findMinSeamH(vector<int> const &SeamTable, int minCol, int width, int height){
+
+    //seam.clear();
+    
+    for(int i = img.width -1; i> 0; i--){
+        hSeam[i] = minCol;
+        vector<int>::const_iterator first = SeamTable.begin() + ((i-1)*(newHeight));
+        vector<int>::const_iterator last = SeamTable.begin() + (i*(newWidth));
+        vector<int> rowArray(first, last);
+        minCol = getNextMinColH(rowArray, minCol);
+    }
+    
+    hSeam[0] = minCol;
+    
+    return hSeam;
+}
+
+//--------------------------------------------------------------
+vector<int> testApp::findMinSeam(vector<int> const &SeamTable, int minCol, int width, int height){
     //seam.clear();
     
     for(int i = newImg.width -1; i> 0; i--){
@@ -600,22 +706,6 @@ vector<int> testApp::findMinSeamH(vector<int> const &SeamTable, int minCol, int 
     return seam;
 }
 
-//--------------------------------------------------------------
-vector<int> testApp::findMinSeam(vector<int> const &SeamTable, int minCol, int width, int height){
-    //seam.clear();
-    
-    for(int i = newImg.height -1; i> 0; i--){
-        hSeam[i] = minCol;
-        vector<int>::const_iterator first = SeamTable.begin() + ((i-1)*(newImg.width));
-        vector<int>::const_iterator last = SeamTable.begin() + (i*(newImg.width));
-        vector<int> rowArray(first, last);
-        minCol = getNextMinCol(rowArray, minCol);
-    }
-    
-    hSeam[0] = minCol;
-    
-    return hSeam;
-}
 //--------------------------------------------------------------
 
 
@@ -655,6 +745,40 @@ int testApp::getNextMinCol(vector<int> const &rowArray, int col){
 }
 
 //--------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------
+
+
+int testApp::getNextMinColH(vector<int> const &rowArray, int col){
+    if(col == 0){
+        if(rowArray[col] < rowArray[col + 1]){
+            return col;
+        } else {
+            return col + 1;
+        }
+    } else if( col == rowArray.size() -1){
+        if(rowArray[col -1] < rowArray[col]){
+            return col -1;
+        } else{
+            return col;
+        }
+    } else{
+
+        if((rowArray[col -1] < rowArray[col]) && (rowArray[col -1] < rowArray[col + 1])){
+            return col -1;
+        } else if((rowArray[col] < rowArray[col - 1]) && (rowArray[col] < rowArray[col+1])){
+            return col;
+        } else{
+            return col + 1;
+        }
+    }
+}
+
+//--------------------------------------------------------------
+
+
 int testApp::getPixelLoc(ofPixels const &ppixels, int row, int col, int srcWidth){
     return ppixels[(row*srcWidth+col) * 4];
 }
@@ -663,6 +787,7 @@ int testApp::getPixelLoc(ofPixels const &ppixels, int row, int col, int srcWidth
 void testApp::keyPressed(int key){
     if(key == 'a'){
         fbo.allocate(newImg.width, newImg.height, GL_RGBA);
+
 
         fbo.begin();
             ofClear(0);

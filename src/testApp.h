@@ -30,6 +30,8 @@ class testApp : public ofBaseApp{
         vector<int> findMinSeam(vector<int> const &SeamTable, int minCol, int width, int height);
         vector<int> findMinSeamH(vector<int> const &SeamTable, int minCol, int width, int height);
         int getNextMinCol(vector<int> const &rowArray, int col);
+        int getNextMinColH(vector<int> const &rowArray, int col);
+
         void getEnergyMap(ofTexture &tex);
         int fastMin(int x, int y);
     
