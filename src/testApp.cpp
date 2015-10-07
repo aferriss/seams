@@ -12,6 +12,7 @@ void testApp::setup(){
     img.loadImage("atrium.png");
     //img.rotate90(1);
     
+
     cout<<ofToString(img.getPixelsRef().getNumChannels())<<endl;
     w = img.width;
     h = img.height;
@@ -132,8 +133,7 @@ void testApp::draw(){
     
     if(ofGetFrameNum() <=200 && numSeamsRemoved < img.width-1){
         fbo.allocate(newImg.width, newImg.height, GL_RGBA);
-    
-    
+
         fbo.begin();
             ofClear(0);
         fbo.end();
@@ -157,6 +157,7 @@ void testApp::draw(){
             //removeSeam(newImg.getTextureReference());
             removeHSeam(newImg.getTextureReference());
         }
+
         
         /*
         if(ofGetFrameNum() % 2 == 0){
@@ -191,6 +192,7 @@ void testApp::draw(){
         
         
         
+
         pixels = newImg.getPixelsRef();
     }
      
@@ -358,6 +360,7 @@ void testApp::removeSeam(ofTexture &srcTex){
 //--------------------------------------------------------------
 void testApp::addSeam(ofTexture &srcTex){
     
+
     
     fbo.begin();
         srcTex.draw(0, 0);
@@ -374,14 +377,17 @@ void testApp::addSeam(ofTexture &srcTex){
     
     //ofPixels newPixels;
     newPixels.allocate(newWidth, h, OF_PIXELS_RGBA);
+
     
     auto pixelsToRemovePtr = pixelsToRemove.getPixels();
     auto newPixelsPtr = newPixels.getPixels();
    
     
     //for(int numSeams = 0; numSeams< totalSeams.size(); numSeams++){
+
         vector<int> &curSeam = totalSeams[totalSeams.size() - 1];
         cout<<ofToString(totalSeams.size())<<endl;
+
         for(int row = 0; row < img.height; row++){
             
             int colToRemove = curSeam[row];
@@ -410,6 +416,7 @@ void testApp::addSeam(ofTexture &srcTex){
                     
                 } else if (col > colToRemove){
                     newPixelIndex += 4;
+
                     newPixelsPtr[newPixelIndex] = pixelsToRemovePtr[oldPixelIndex];
                     newPixelsPtr[newPixelIndex+1] = pixelsToRemovePtr[oldPixelIndex+1];
                     newPixelsPtr[newPixelIndex+2] = pixelsToRemovePtr[oldPixelIndex+2];
@@ -537,6 +544,7 @@ void testApp::findSeam(){
     unsigned char *fboPix = pixels.getPixels();
     
     //cout<<ofToString(pixels.getNumChannels())<<endl;
+
     //fill the last row
     for(int y = 0; y < newWidth; y++){
         seamTable[y] = fboPix[y*4];//getPixelLoc(pixels, 0, y, img.width);
@@ -574,6 +582,7 @@ void testApp::findSeam(){
                 } else{
                  */
                 
+
                 seamTable[seamLoc] = fboPix[loc];
                 seamTable[seamLoc] += fastMin(fastMin(seamTable[rowOffset + j -1], t), seamTable[rowOffset + j + 1]);
                 //}
@@ -604,6 +613,7 @@ void testApp::findSeam(){
     } else{
         //cout<<"Min seam = "+ofToString(minCol)<<endl;
         foundSeam = findMinSeam(seamTable, minCol, newWidth, newImg.height);
+
         totalSeams.push_back(foundSeam);
     }
 
@@ -642,7 +652,6 @@ vector<int> testApp::findMinSeam(vector<int> const &SeamTable, int minCol, int w
     return seam;
 }
 //--------------------------------------------------------------
-
 
 int testApp::getNextMinCol(vector<int> const &rowArray, int col){
     if(col == 0){
