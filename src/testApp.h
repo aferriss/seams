@@ -25,7 +25,8 @@ class testApp : public ofBaseApp{
         int getPixelLoc(ofPixels const &ppixels, int row, int col, int width);
         void findSeam();
         void findHorSeam();
-    
+        void flipAndSetupSizes();
+        void remove1Seam();
     
         vector<int> findMinSeam(vector<int> const &SeamTable, int minCol, int width, int height);
         vector<int> findMinSeamH(vector<int> const &SeamTable, int minCol, int width, int height);
@@ -46,7 +47,8 @@ class testApp : public ofBaseApp{
     vector<int> hSeam;
     vector<vector<int> > totalSeams;
     
-    
+    bool sideWays;
+    bool hasTurned;
     ofImage img, greyImg, newImg;
     ofTexture tex;
     ofPixels pixels, greyPix, origPix;
@@ -54,7 +56,7 @@ class testApp : public ofBaseApp{
     ofPixels np;
     ofImage ni;
     
-    ofFbo fbo, energyFbo, rowFbo;
+    ofFbo fbo, energyFbo, displayFbo;
     ofShader baseShader, sobelShader, energyShader;
     int newWidth, newHeight;
     int startingWidth, startingHeight;
