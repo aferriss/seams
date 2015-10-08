@@ -19,14 +19,13 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void removeSeam(ofTexture &srcTex);
-        void removeHSeam(ofTexture &srcTex);
         void addSeam(ofTexture &srcTex);
         //void convertGrayscale(ofPixels pixels);
         int getPixelLoc(ofPixels const &ppixels, int row, int col, int width);
         void findSeam();
-        void findHorSeam();
         void flipAndSetupSizes();
         void remove1Seam();
+        void add1Seam();
     
         vector<int> findMinSeam(vector<int> const &SeamTable, int minCol, int width, int height);
         vector<int> findMinSeamH(vector<int> const &SeamTable, int minCol, int width, int height);
@@ -46,6 +45,7 @@ class testApp : public ofBaseApp{
     vector<int> seam;
     vector<int> hSeam;
     vector<vector<int> > totalSeams;
+    vector<vector<int> > totalSeamsH;
     
     bool sideWays;
     bool hasTurned;
@@ -56,6 +56,10 @@ class testApp : public ofBaseApp{
     ofPixels np;
     ofImage ni;
     
+    int seamSize;
+    
+    bool doRemove, doAdd;
+    
     ofFbo fbo, energyFbo, displayFbo;
     ofShader baseShader, sobelShader, energyShader;
     int newWidth, newHeight;
@@ -64,6 +68,6 @@ class testApp : public ofBaseApp{
     bool findAll, drawSeam;
     
     int numSeamsRemoved, numRowsRemoved;
-    int numSeamsAdded;
+    int numSeamsAdded, numRowsAdded;
     
 };
