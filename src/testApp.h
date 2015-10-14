@@ -60,7 +60,7 @@ class testApp : public ofBaseApp{
     
     bool doRemove, doAdd;
     
-    ofFbo fbo, energyFbo, displayFbo;
+    ofFbo fbo, energyFbo, displayFbo, centerFbo;
     ofShader baseShader, sobelShader, energyShader;
     int newWidth, newHeight;
     int startingWidth, startingHeight;
@@ -69,5 +69,9 @@ class testApp : public ofBaseApp{
     
     int numSeamsRemoved, numRowsRemoved;
     int numSeamsAdded, numRowsAdded;
+    
+    
+    int dirIndex;
+    
     
 };

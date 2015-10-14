@@ -10,7 +10,7 @@ void testApp::setup(){
     
 
 
-    img.loadImage("merkel.png");
+    img.loadImage("faces/barraco.png");
     img.rotate90(0);
     
 
@@ -22,12 +22,13 @@ void testApp::setup(){
     
     int maxSize = max(img.width, img.height);
     displayFbo.allocate(maxSize,maxSize, GL_RGBA);
+    centerFbo.allocate(1920,1080, GL_RGBA);
     
     pixels.allocate(img.width, img.height, OF_PIXELS_RGBA);
     newImg.allocate(img.width, img.height, OF_IMAGE_COLOR_ALPHA);
     
     pixels = img.getPixelsRef();
-
+    
     
     
     newImg.setUseTexture(true);
@@ -75,6 +76,9 @@ void testApp::setup(){
     
     doRemove = true;
     doAdd = false;
+    
+    
+    
 }
 
 //--------------------------------------------------------------
@@ -130,14 +134,14 @@ void testApp::draw(){
 
         pixels = newImg.getPixelsRef();
     }
-    /*
-    if(ofGetFrameNum() < img.height -1){
+    
+    if(ofGetFrameNum() <= img.width *2 - 500){
         doRemove = true;
-    } else if(ofGetFrameNum() == img.height-1){
+    } else {
         doRemove = false;
         doAdd = true;
     }
-    */
+    
     
     if(doRemove){
         flipAndSetupSizes();
@@ -151,25 +155,52 @@ void testApp::draw(){
      
     ofClear(0);
 
-    
+    if(!sideWays){
     displayFbo.begin();
         ofClear(0);
-            newImg.draw(0,0);
+            newImg.draw(0,0, displayFbo.getWidth(), displayFbo.getWidth());
     displayFbo.end();
-    
-    if(!sideWays){
-        displayFbo.draw(0,0);
     } else if(sideWays){
+        displayFbo.begin();
+        ofClear(0);
+        ofPushMatrix();
+            ofRotate(-90, 0, 0, 1);
+            int ww = newImg.width;
+        //cout<<ofToString(newImg.height)<<endl;
+            //newImg.draw(-ww, 0);
+            newImg.draw(-1080, 0, displayFbo.getWidth(), displayFbo.getWidth() );
+        ofPopMatrix();
+        displayFbo.end();
+    }
+    
+   // if(!sideWays){
+        //displayFbo.draw(0,0);
+   /* } else if(sideWays){
         ofPushMatrix();
         ofRotate(-90, 0, 0, 1);
         displayFbo.draw(-newImg.width,0);
         ofPopMatrix();
-    }
+    }*/
     
+    centerFbo.begin();
+        ofClear(0,0,0,255);
+        //displayFbo.draw(displayFbo.getWidth()/2 - newImg.width/2 , displayFbo.getHeight()/2 - newImg.height/2);
+       // displayFbo.draw(0,0, centerFbo.getWidth()+(centerFbo.getWidth()-newImg.width), centerFbo.getHeight()+ (centerFbo.getHeight()-newImg.height));
+        displayFbo.draw(centerFbo.getWidth()/2 - displayFbo.getWidth()/2,0);
+    centerFbo.end();
+    
+    centerFbo.draw(0,0);
     
     //newImg.draw(0,0);
     //newImg.draw(floor((numSeamsRemoved-1)*0.5), floor((numRowsRemoved -1)*0.5));
     //newImg.draw(0,floor((numRowsRemoved -1)*0.5));
+    
+    //fbo.draw(0,0);
+    if(ofGetFrameNum() < 3324){
+    ofPixels centerPix;
+    centerFbo.readToPixels(centerPix);
+    ofSaveImage(centerPix, "savedFrames/newObama/obama"+ofToString(ofGetFrameNum())+".png");
+    }
     
 }
 //--------------------------------------------------------------
@@ -382,9 +413,9 @@ void testApp::addSeam(ofTexture &srcTex){
                     //int randPos = int(ofRandom(6));
                     //int fours [] = {4, 8, 12, 16, 20, 24};
                     
-                    newPixelsPtr[newPixelIndex] = (pixelsToRemovePtr[oldPixelIndex] + pixelsToRemovePtr[oldPixelIndex+4])/2;
-                    newPixelsPtr[newPixelIndex+1] = (pixelsToRemovePtr[oldPixelIndex+1] + pixelsToRemovePtr[oldPixelIndex+5])/2;
-                    newPixelsPtr[newPixelIndex+2] = (pixelsToRemovePtr[oldPixelIndex+2] + pixelsToRemovePtr[oldPixelIndex+6] )/2;
+                    newPixelsPtr[newPixelIndex] = 0;//(pixelsToRemovePtr[oldPixelIndex] + pixelsToRemovePtr[oldPixelIndex+4])/2;
+                    newPixelsPtr[newPixelIndex+1] = 0;//(pixelsToRemovePtr[oldPixelIndex+1] + pixelsToRemovePtr[oldPixelIndex+5])/2;
+                    newPixelsPtr[newPixelIndex+2] = 0;//(pixelsToRemovePtr[oldPixelIndex+2] + pixelsToRemovePtr[oldPixelIndex+6] )/2;
                     newPixelsPtr[newPixelIndex+3] = 255;//(pixelsToRemovePtr[oldPixelIndex+3] + pixelsToRemovePtr[oldPixelIndex+7])/2;
                 }
                 

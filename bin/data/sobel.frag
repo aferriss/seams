@@ -76,14 +76,15 @@ void main(){
     //square luma values to denoise
     float g = x + y ;
     g = clamp(g, 0.0,1.0);
-    float g2 = x2+y2;
+    float g2 = x2 + y2;
     g2 = clamp(g2, 0.0,1.0);
-    //g*= 5.0;
+    g*= 2.5;
+    g2*= 2.5;
     g += g2;
     g = clamp(g, 0.0,1.0);
     // add sobel result to srcTex
-    vec4 glowTex = texture2DRect(srcTex, uv);
-
+    //vec4 glowTex = texture2DRect(srcTex, uv);
+    //g =  g;
     // sine wave on the blue channel
     //glowTex += vec4(g, (g*0.5)*(sin(time*2.0)/2.0 + 0.7), g*(sin(time*2.0)/2.0 + 0.5), 1.0);
     //glowTex.rgb = clamp(glowTex.rgb, 0.0,1.0);

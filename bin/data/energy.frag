@@ -94,5 +94,5 @@ void main(){
     // sine wave on the blue channel
     //glowTex += vec4(g, (g*0.5)*(sin(time*2.0)/2.0 + 0.7), g*(sin(time*2.0)/2.0 + 0.5), 1.0);
     //glowTex.rgb = clamp(glowTex.rgb, 0.0,1.0);
-    gl_FragColor =vec4(vec3((sum)),1.0);
+    gl_FragColor =vec4(vec3((1.0 - sum)),1.0);
 }
